@@ -1,3 +1,8 @@
+"
+This function validates the data model by obtaining an ACP PF solution,
+and comparing the bus voltage phasors and load power against the data contained
+in the specified OpenDSS output files.
+"
 function validate(tppm::Dict, dss_output_vmva_path, dss_output_pdqd_path;
                             vm_atol=1.5E-4, va_atol_deg=0.05, pq_atol_kva=0.1)
     res_buses = parse_opendss_VLN_Node("../data/IEEE13NodecktAssets_VLN_Node.txt", va_offset=-deg2rad(30))
@@ -8,6 +13,11 @@ function validate(tppm::Dict, dss_output_vmva_path, dss_output_pdqd_path;
 end
 
 
+"
+This function validates the data model by obtaining an ACP PF solution,
+and comparing the bus voltage phasors and load power against the data contained
+in the specified OpenDSS output files.
+"
 function validate(tppm::Dict, res_buses::Dict, res_loads::Dict;
                             vm_atol=1.5E-4, va_atol_deg=0.05, pq_atol_kva=0.1)
     pm = PMs.build_generic_model(tppm, PMs.ACPPowerModel, TPPMs.post_tp_opf_lm, multiconductor=true)
@@ -21,7 +31,7 @@ function validate(tppm::Dict, res_buses::Dict, res_loads::Dict;
             pd_kw_tppm = JuMP.getvalue(PMs.var(pm, pm.cnw, c, :pd, load_id))*sbase_kva
             pd_kw_diff = pd_kw_dss-pd_kw_tppm
             @test abs(pd_kw_diff) <= pq_atol_kva
-            
+
             qd_kvar_dss = (ismissing(res_load[:qd_kvar][c])) ? 0 : res_load[:qd_kvar][c]
             qd_kvar_tppm = JuMP.getvalue(PMs.var(pm, pm.cnw, c, :qd, load_id))*sbase_kva
             qd_kvar_diff = qd_kvar_dss-qd_kvar_tppm
