@@ -61,7 +61,6 @@ function parse_opendss_Power_elem_kVA(file_path; nphs=3)
             if parts[1]=="ELEMENT"
                 el_str = parts[3][2:end-1]
                 component = split(el_str, ".", limit=2)[1]
-                println(component)
                 if component=="Load"
                     name = lowercase(split(el_str, ".", limit=2)[2])
                     data_mode = true
