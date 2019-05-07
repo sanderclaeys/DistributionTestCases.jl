@@ -9,6 +9,28 @@ This can be installed by executing
  ]add https://github.com/sanderclaeys/ThreePhasePowerModels.jl#loadmodels
 ```
 
+## Usage
+You can obtain a TPPM data model by executing the following. This will parse
+a modified dss file of the original OpenDSS IEEE13 implementation, and apply
+a few transformations in post-processing. This is needed because the OpenDSS
+parser does not support all of the features available in TPPM.
+```
+import TPPMTestFeeders
+tppm = TPPMTestFeeders.get_IEEE13()
+```
+Note: Since TPPMTestFeeders is not registered, you cannot add it through the
+package manager.
+
+## Validation
+Test feeders are validated by comparing
+- all bus voltage phasors
+- power drawm by all loads
+
+This process is automated; dss output files are automatically parsed and
+compared against the results of TPPM. For IEEE13 for example, this results in
+a total of 184 tests. Like this, validation will scale to large test feeders,
+such as IEEE123 (≈1700 test by extrapolation).
+
 ## Included test feeders
 
 |publisher|name|status|files|OpenDSS|
