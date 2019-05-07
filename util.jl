@@ -4,7 +4,7 @@ and extracts the voltage phasors of all buses.
 When a node is missing from the data (for example, the third node in a segment
 with two-phase cables), then the value will be 'missing' for that node.
 "
-function parse_opendss_VLN_Node(file_path; nphs=3)
+function parse_opendss_VLN_Node(file_path; nphs=3, va_offset=0)
     buses = Dict{String, Dict{Symbol, Any}}()
     open(file_path, "r") do file
         bus_name::Union{String, Nothing} = nothing
@@ -20,7 +20,7 @@ function parse_opendss_VLN_Node(file_path; nphs=3)
                 parts = [x for x in parts if !(x in ["."^x for x in 1:5])]
                 node = parse(Int, parts[2])
                 buses[bus_name][:vm_kv][node] = parse(Float64, parts[3])
-                buses[bus_name][:va_rad][node] = deg2rad(parse(Float64, parts[3]))
+                buses[bus_name][:va_rad][node] = deg2rad(parse(Float64, parts[5]))+va_offset
             end
         end
     end
@@ -72,6 +72,18 @@ function parse_opendss_Power_elem_kVA(file_path; nphs=3)
     end
     return loads
 end
+
+
+"Find the id (integer) of a component by its name."
+function name2id(dict::Dict, name::String)
+    for (k,v) in dict
+        if haskey(v, "name") && v["name"]==name
+            return v["index"]
+        end
+    end
+    return nothing
+end
+
 
 # USAGE EXAMPLE
 #buses_res = parse_opendss_VLN_Node("data/IEEE13NodecktAssets_VLN_Node.txt")

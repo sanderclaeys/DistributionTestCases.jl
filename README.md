@@ -4,6 +4,11 @@ Generates and validates TPPM data models for common test feeders. Some of these 
 ## Dependencies
 Note that this code relies on a version of ThreePhasePowerModels (TPPM) that is still being merged. You can find it in my fork of TPPM, in the [branch 'loadmodels'](https://https://github.com/sanderclaeys/ThreePhasePowerModels.jl/tree/loadmodels).
 
+This can be installed by executing
+```
+ ]add https://github.com/sanderclaeys/ThreePhasePowerModels.jl#loadmodels
+```
+
 ## Included test feeders
 
 |publisher|name|status|files|OpenDSS|

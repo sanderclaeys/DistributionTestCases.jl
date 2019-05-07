@@ -1,3 +1,11 @@
+import ThreePhasePowerModels
+TPPMs = ThreePhasePowerModels
+import PowerModels
+import JuMP
+import Ipopt
+PMs = PowerModels
+using Compat.Test
+
 function get_IEEE13(; dss_file_path="../data/IEEE13_TPPM.dss")
     dss = TPPMs.parse_dss(dss_file_path)
     # remove reg 1 and reg 2
@@ -8,8 +16,8 @@ function get_IEEE13(; dss_file_path="../data/IEEE13_TPPM.dss")
     reg1_w1 = [tr for tr in reg1 if split(tr["name"], "_")[2]=="w1"][1]
     reg1_w2 = [tr for tr in reg1 if split(tr["name"], "_")[2]=="w2"][1]
     # set correct tap settingsß
-    reg1_w1["tapset"] = MultiConductorVector([1.0, 1.0, 1.0])
-    reg1_w2["tapset"] = MultiConductorVector([1.0625, 1.0500, 1.06875])
+    reg1_w1["tm"] = PMs.MultiConductorVector([1.0, 1.0, 1.0])
+    reg1_w2["tm"] = PMs.MultiConductorVector([1.0625, 1.0500, 1.06875])
     #reg1_w2["tapset"] = MultiConductorVector([1.0, 1.0, 1.0])
     # make per unit needed
     TPPMs.check_network_data(tppm)
@@ -17,5 +25,6 @@ function get_IEEE13(; dss_file_path="../data/IEEE13_TPPM.dss")
 end
 
 function validate_IEEE13()
-
+    tppm = get_IEEE13()
+    validate(tppm, "IEEE13NodecktAssets_VLN_Node.txt",  "IEEE13NodecktAssets_Power_elem_kVA.txt")
 end
