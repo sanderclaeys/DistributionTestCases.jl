@@ -1,5 +1,5 @@
-function get_IEEE13(; dss_file_path="data/IEEE13_TPPM.dss")
-    dss = TPPMs.parse_dss(dss_file_path)
+function get_IEEE13()
+    dss = TPPMs.parse_dss(string(BASE_DIR, "data/IEEE13_TPPM.dss"))
     # remove reg 1 and reg 2
     dss["transformer"] = [tr for tr in dss["transformer"] if !(tr["name"] in ["reg2", "reg3"])]
     tppm = TPPMs.parse_opendss(dss)
@@ -17,9 +17,6 @@ function get_IEEE13(; dss_file_path="data/IEEE13_TPPM.dss")
 end
 
 function validate_IEEE13()
-    # Suppress warnings during testing.
-    Memento.setlevel!(Memento.getlogger(PowerModels), "error")
-    
-    tppm = get_IEEE13()
-    validate(tppm, "data/IEEE13NodecktAssets_VLN_Node.txt",  "data/IEEE13NodecktAssets_Power_elem_kVA.txt")
+
+
 end

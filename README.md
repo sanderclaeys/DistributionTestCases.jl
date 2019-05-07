@@ -1,14 +1,15 @@
 # TPPMTestFeeders
 Generates and validates TPPM data models for common test feeders. Some of these require some adjustment after the call to the OpenDSS parser, and are therefore contained here for now.
 
-## Dependencies
-Note that this code relies on a version of ThreePhasePowerModels (TPPM) that is still being merged. You can find it in my fork of TPPM, in the [branch 'loadmodels'](https://https://github.com/sanderclaeys/ThreePhasePowerModels.jl/tree/loadmodels).
-
-This can be installed by executing
+## Installation
+Note that this code relies on a version of ThreePhasePowerModels (TPPM) that is still being merged. You can find it in my fork of TPPM, in the [branch 'loadmodels'](https://https://github.com/sanderclaeys/ThreePhasePowerModels.jl/tree/loadmodels). This can be installed by executing the following in Julia REPL
 ```
  ]add https://github.com/sanderclaeys/ThreePhasePowerModels.jl#loadmodels
 ```
-
+Next, you can install this package itself by executing the following in Julia REPL. This will prompt for your GitHub credentials, because this is a private repository for now.
+```
+]add https://github.com/sanderclaeys/TPPMTestFeeders.jl
+```
 ## Usage
 You can obtain a TPPM data model by executing the following. This will parse
 a modified dss file of the original OpenDSS IEEE13 implementation, and apply
