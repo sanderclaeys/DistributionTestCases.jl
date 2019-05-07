@@ -75,4 +75,4 @@ end
 
 # USAGE EXAMPLE
 #buses_res = parse_opendss_VLN_Node("data/IEEE13NodecktAssets_VLN_Node.txt")
-#buses_res = parse_opendss_Power_elem_kVA("data/IEEE13NodecktAssets_Power_elem_kVA.txt")
+#loads_res = parse_opendss_Power_elem_kVA("data/IEEE13NodecktAssets_Power_elem_kVA.txt")
