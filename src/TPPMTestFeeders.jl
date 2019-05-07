@@ -6,6 +6,8 @@ TPPMs = ThreePhasePowerModels
 import PowerModels
 PMs = PowerModels
 
+const BASE_DIR = Base.functionloc(TPPMTestFeeders.eval)[1][1:end-18]
+
 import JuMP
 import Ipopt
 import Memento

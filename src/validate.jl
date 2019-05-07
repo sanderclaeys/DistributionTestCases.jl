@@ -1,8 +1,8 @@
-"
+"""
 This function validates the data model by obtaining an ACP PF solution,
 and comparing the bus voltage phasors and load power against the data contained
 in the specified OpenDSS output files.
-"
+"""
 function validate(tppm::Dict, dss_output_vmva_path, dss_output_pdqd_path;
                             vm_atol=1.5E-4, va_atol_deg=0.05, pq_atol_kva=0.1)
     res_buses = parse_opendss_VLN_Node(dss_output_vmva_path, va_offset=-deg2rad(30))
@@ -13,11 +13,11 @@ function validate(tppm::Dict, dss_output_vmva_path, dss_output_pdqd_path;
 end
 
 
-"
+"""
 This function validates the data model by obtaining an ACP PF solution,
 and comparing the bus voltage phasors and load power against the data contained
 in the specified OpenDSS output files.
-"
+"""
 function validate(tppm::Dict, res_buses::Dict, res_loads::Dict;
                     vm_atol=1.5E-4, va_atol_deg=0.05, pq_atol_kva=0.1)
     pm = PMs.build_generic_model(tppm, PMs.ACPPowerModel, TPPMs.post_tp_opf_lm, multiconductor=true)
@@ -41,7 +41,7 @@ function validate(tppm::Dict, res_buses::Dict, res_loads::Dict;
         end
     end
     # check the voltage phasors
-    begin "bus voltage"
+    @testset "bus voltage" begin
         for (bus_name, res_bus) in res_buses
             bus_id = name2id(tppm["bus"], bus_name)
             vbase_kv = tppm["bus"]["$bus_id"]["base_kv"]
