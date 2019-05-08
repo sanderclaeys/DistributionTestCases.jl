@@ -115,18 +115,21 @@ Check whether two solved pms have the same values for :pd, :pq, :vm and :va.
 This therefore presumes an ACPPowerModel.
 """
 function equal_solutions(pm1::PMs.GenericPowerModel{T}, pm2::PMs.GenericPowerModel{T};
+                                v_only=false,
                                 pq_atol_kva=1E-2, vm_atol=1E-5, va_atol_rad=1E-4) where T <: PMs.AbstractACPForm
-    @testset "equal load power" begin
-        for load_id in PMs.ids(pm1, :load)
-            for c in PMs.conductor_ids(pm1)
-                sbase_kva_1 = PMs.ref(pm1, :baseMVA)*1E3
-                sbase_kva_2 = PMs.ref(pm2, :baseMVA)*1E3
-                pd1 = JuMP.getvalue(PMs.var(pm1, pm1.cnw, c, :pd, load_id))
-                pd2 = JuMP.getvalue(PMs.var(pm2, pm2.cnw, c, :pd, load_id))
-                qd1 = JuMP.getvalue(PMs.var(pm1, pm1.cnw, c, :qd, load_id))
-                qd2 = JuMP.getvalue(PMs.var(pm2, pm2.cnw, c, :qd, load_id))
-                @test abs(pd1*sbase_kva_1-pd2*sbase_kva_2)<= pq_atol_kva
-                @test abs(qd1*sbase_kva_1-qd2*sbase_kva_2)<= pq_atol_kva
+    if !v_only
+        @testset "equal load power" begin
+            for load_id in PMs.ids(pm1, :load)
+                for c in PMs.conductor_ids(pm1)
+                    sbase_kva_1 = PMs.ref(pm1, :baseMVA)*1E3
+                    sbase_kva_2 = PMs.ref(pm2, :baseMVA)*1E3
+                    pd1 = JuMP.getvalue(PMs.var(pm1, pm1.cnw, c, :pd, load_id))
+                    pd2 = JuMP.getvalue(PMs.var(pm2, pm2.cnw, c, :pd, load_id))
+                    qd1 = JuMP.getvalue(PMs.var(pm1, pm1.cnw, c, :qd, load_id))
+                    qd2 = JuMP.getvalue(PMs.var(pm2, pm2.cnw, c, :qd, load_id))
+                    @test abs(pd1*sbase_kva_1-pd2*sbase_kva_2)<= pq_atol_kva
+                    @test abs(qd1*sbase_kva_1-qd2*sbase_kva_2)<= pq_atol_kva
+                end
             end
         end
     end
