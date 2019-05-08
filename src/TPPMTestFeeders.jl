@@ -15,6 +15,7 @@ using Compat.Test
 
 include("util.jl")
 include("validate.jl")
+include("parser.jl")
 include("feeders/IEEE13.jl")
 
 end

@@ -1,12 +1,12 @@
-using PowerModels
+import PowerModels
 PMs = PowerModels
-using ThreePhasePowerModels
+import ThreePhasePowerModels
 TPPMs = ThreePhasePowerModels
 TTF = TPPMTestFeeders
 
 using Compat.Test
 import Memento
-using Ipopt
+import Ipopt
 
 ipopt_solver = Ipopt.IpoptSolver(print_level=0)
 
