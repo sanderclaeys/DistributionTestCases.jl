@@ -22,6 +22,8 @@ function guess_type(els::Union{AbstractString, Array{T} where T <: AbstractStrin
             continue
         elseif occursin(r"^[1-9][0-9]*$", el)
             return Int
+        elseif el in ["true", "false"]
+            return Bool
         else
             try
                 parse(Float64, el)
@@ -62,7 +64,9 @@ function from_string(str::AbstractString)
     if type <: AbstractString
         return constr(els)
     else
-        return constr(parse.(type, els))
+        # list comprehension needed to convert BitArray to Array{Bool}
+        # has no effect on other Arrays
+        return constr([x for x in parse.(type, els)])
     end
 end
 

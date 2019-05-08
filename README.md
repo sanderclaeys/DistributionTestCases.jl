@@ -19,8 +19,12 @@ parser does not support all of the features available in TPPM.
 import TPPMTestFeeders
 tppm = TPPMTestFeeders.get_IEEE13()
 ```
-Note: Since TPPMTestFeeders is not registered, you cannot add it through the
-package manager.
+Also, this package includes a fairly robust json parser for TPPM data models
+(currently missing in TPPM). This can be used like this
+```
+TPPMTestFeeders.save_tppm(tppm, "file.json")
+tppm = TPPMTestFeeders.load_tppm("file.json")
+```
 
 ## Validation
 Test feeders are validated by comparing
