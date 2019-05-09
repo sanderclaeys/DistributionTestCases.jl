@@ -18,6 +18,8 @@ parser does not support all of the features available in TPPM.
 ```
 import TPPMTestFeeders
 tppm = TPPMTestFeeders.get_IEEE13()
+# Don't forget to add voltage bounds and line bounds!
+# These are not included in the original specification
 ```
 Sometimes, you want to get rid of all exotic load models (all besides constant power, wye connected).
 You can generate such a simplified model by doing the following. This will run
