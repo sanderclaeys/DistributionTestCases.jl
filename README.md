@@ -20,7 +20,7 @@ import TPPMTestFeeders
 tppm = TPPMTestFeeders.get_IEEE13()
 ```
 Also, this package includes a fairly robust json parser for TPPM data models
-(currently missing in TPPM). This can be used like this
+(currently broken in TPPM under new extensions). This can be used like this
 ```
 TPPMTestFeeders.save_tppm(tppm, "file.json")
 tppm = TPPMTestFeeders.load_tppm("file.json")
