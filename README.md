@@ -35,7 +35,15 @@ Also, this package includes a fairly robust json parser for TPPM data models
 TPPMTestFeeders.save_tppm(tppm, "file.json")
 tppm = TPPMTestFeeders.load_tppm("file.json")
 ```
-
+Finally, some experimental topology plotting. This should only be used for radial
+feeders.
+```
+# example for IEEE13
+tppm = TPPMTestFeeders.get_IEEE13()
+coords = TPPMTestFeeders.get_bus_coords(tppm, spacing_y=1)
+TPPMTestFeeders.draw_topology(tppm, coords)
+```
+![](docs/IEEE13_topology.png)
 ## Validation
 Test feeders are validated by comparing
 - all bus voltage phasors
