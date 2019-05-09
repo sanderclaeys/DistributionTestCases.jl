@@ -19,6 +19,14 @@ parser does not support all of the features available in TPPM.
 import TPPMTestFeeders
 tppm = TPPMTestFeeders.get_IEEE13()
 ```
+Sometimes, you want to get rid of all exotic load models (all besides constant power, wye connected).
+You can generate such a simplified model by doing the following. This will run
+an ACP, and then convert all loads to PQ loads, at the setpoint obtained from
+the ACP run.
+```
+tppm = TTF.get_IEEE13()
+tppm_pq = TTF.convert_to_PQ(tppm)
+```
 Also, this package includes a fairly robust json parser for TPPM data models
 (currently broken in TPPM under new extensions). This can be used like this
 ```
