@@ -13,7 +13,6 @@ import JuMP
 import Ipopt
 import Memento
 import Plots
-Plots.plotly()
 using Compat.Test
 
 include("util.jl")

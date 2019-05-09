@@ -36,14 +36,18 @@ TPPMTestFeeders.save_tppm(tppm, "file.json")
 tppm = TPPMTestFeeders.load_tppm("file.json")
 ```
 Finally, some experimental topology plotting. This should only be used for radial
-feeders.
+feeders. The Plotly backend is preferred, as it shows the id of elements when
+you hover over them.
 ```
 # example for IEEE13
+import Plots
+Plots.plotly()
 tppm = TPPMTestFeeders.get_IEEE13()
 coords = TPPMTestFeeders.get_bus_coords(tppm, spacing_y=1)
 TPPMTestFeeders.draw_topology(tppm, coords)
 ```
 <p align="center"><img src="docs/IEEE13_topology.png"></p>
+
 ## Validation
 Test feeders are validated by comparing
 - all bus voltage phasors
