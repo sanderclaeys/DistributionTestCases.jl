@@ -43,7 +43,7 @@ tppm = TPPMTestFeeders.get_IEEE13()
 coords = TPPMTestFeeders.get_bus_coords(tppm, spacing_y=1)
 TPPMTestFeeders.draw_topology(tppm, coords)
 ```
-![](docs/IEEE13_topology.png)
+<p align="center"><img src="docs/IEEE13_topology.png"></p>
 ## Validation
 Test feeders are validated by comparing
 - all bus voltage phasors
