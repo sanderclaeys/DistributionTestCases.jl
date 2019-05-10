@@ -1,4 +1,4 @@
-function get_bus_coords(tppm; spacing_x=1, spacing_y=2)
+function get_bus_coords_old(tppm; spacing_x=1, spacing_y=2)
     bus_source = [bus["index"] for (_,bus) in tppm["bus"] if bus["bus_type"]==3][1]
     coords = Dict{Int, Any}()
     coords[bus_source] = (0,0)
@@ -60,9 +60,15 @@ function draw_topology(tppm, coords;
             f_y = coords[f_bus][2]
             t_x = coords[t_bus][1]
             t_y = coords[t_bus][2]
-            Plots.plot!([f_x, f_x], [f_y, t_y], color=branch_color, width=nph)
-            Plots.plot!([f_x, t_x], [t_y, t_y], color=branch_color, width=nph)
-            Plots.scatter!([(f_x+t_x)/2], [t_y], color=branch_color,
+            Plots.plot!([f_x, f_x, t_x], [f_y, t_y, t_y], color=branch_color, width=nph)
+            if f_x==t_x
+                sx = f_x
+                sy = (f_y+t_y)/2
+            else
+                sx = (t_x+f_x)/2
+                sy = t_y
+            end
+            Plots.scatter!([sx], [sy], color=branch_color,
                 markershape=:square,
                 markerstrokewidth=1,
                 markercolor="white",
@@ -84,14 +90,26 @@ function draw_topology(tppm, coords;
             t_x = coords[t_bus][1]
             t_y = coords[t_bus][2]
             tcol = (is_oltc) ? oltc_color : trans_color
-            Plots.plot!([f_x, f_x], [f_y, t_y], color=tcol, width=3)
-            Plots.plot!([f_x, t_x], [t_y, t_y], color=tcol, width=3)
-            Plots.scatter!([(f_x+t_x)/2-0.1], [t_y], color="white",
+            Plots.plot!([f_x, f_x, t_x], [f_y, t_y, t_y], color=tcol, width=3)
+            if f_x==t_x
+                sx1 = f_x
+                sx2 = f_x
+                sy = (f_y+t_y)/2
+                sy1 = sy+0.1
+                sy2 = sy-0.1
+            else
+                sy1 = t_y
+                sy2 = t_y
+                sx = (f_x+t_x)/2
+                sx1 = sx+0.1
+                sx2 = sx-0.1
+            end
+            Plots.scatter!([sx1], [sy1], color="white",
                 markerstrokewidth=1,
                 markersize=7,
                 markerstrokecolor=tcol
             )
-            Plots.scatter!([(f_x+t_x)/2+0.1], [t_y], color="white",
+            Plots.scatter!([sx2], [sy2], color="white",
                 markerstrokewidth=1,
                 markersize=7,
                 markerstrokecolor=tcol,
@@ -128,7 +146,7 @@ function draw_topology(tppm, coords;
 end
 
 
-function draw_topology_loads(nr_loads, bus_coords, labels; margin_deg=20, radius=0.8, load_color::Array{String, 1}=["red" for i in 1:nr_loads])
+function draw_topology_loads(nr_loads, bus_coords, labels; margin_deg=30, radius=0.8, load_color::Array{String, 1}=["red" for i in 1:nr_loads])
     if nr_loads==1
         spacing = [0.5]
     else
@@ -149,14 +167,14 @@ function draw_topology_loads(nr_loads, bus_coords, labels; margin_deg=20, radius
     end
 end
 
-function draw_topology_gens(nr_gens, bus_coords, labels; margin_deg=20, radius=0.8, gen_color::Array{String, 1}=["green" for i in 1:nr_gens])
+function draw_topology_gens(nr_gens, bus_coords, labels; margin_deg=30, radius=0.8, gen_color::Array{String, 1}=["green" for i in 1:nr_gens])
     if nr_gens==1
         spacing = [0.5]
     else
         spacing = [i/(nr_gens-1) for i in 0:nr_gens-1]
     end
-    a_start = deg2rad(90+margin_deg)
-    a_end = deg2rad(180-margin_deg)
+    a_start = deg2rad(-margin_deg)
+    a_end = deg2rad(-90+margin_deg)
     as = a_start.+(a_end-a_start).*spacing
     f_x = bus_coords[1]
     f_y = bus_coords[2]
