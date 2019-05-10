@@ -63,15 +63,19 @@ such as IEEE123 (≈1700 test by extrapolation).
 |publisher|name|status|files|OpenDSS|
 |---    |---    |---        |---|---|
 |IEEE   |IEEE13 |validated  |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder13.zip)|[@GitHub](https://github.com/tshort/OpenDSS/blob/master/Test/IEEE13_Assets.dss) |
-|IEEE   |IEEE34 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder34.zip)  |?   |
-|IEEE   |IEEE37 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder37.zip)  |?   |
-|IEEE   |IEEE123 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder123.zip)  |?   |
+|IEEE   |IEEE34 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder34.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/34Bus)   |
+|IEEE   |IEEE37 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder37.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/37Bus)   |
+|IEEE   |IEEE123 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder123.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/123Bus)   |
 
 ### IEEE13
 "This circuit model is very small and used to test common features of distribution analysis software, operating at 4.16 kV. It is characterized by being short, relatively highly loaded, a single voltage regulator at the substation, overhead and underground lines, shunt capacitors, an in-line transformer, and unbalanced loading." [[source]](http://sites.ieee.org/pes-testfeeders/resources/)
 
+<p align="center"><img src="docs/IEEE13_topology.png"></p>
+
 ### IEEE34
 "This feeder is an actual feeder located in Arizona, with a nominal voltage of 24.9 kV. It is characterized by long and lightly loaded, two in-line regulators, an in-line transformer for short 4.16 kV section, unbalanced loading, and shunt capacitors." [[source]](http://sites.ieee.org/pes-testfeeders/resources/)
+
+<p align="center"><img src="docs/IEEE34_topology.png"></p>
 
 ### IEEE37
 "This feeder is an actual feeder in California, with a 4.8 kV operating voltage. It is characterized by delta configured, all line segments are underground, substation voltage regulation is two single-phase open-delta regulators, spot loads, and very unbalanced. This circuit configuration is fairly uncommon." [[source]](http://sites.ieee.org/pes-testfeeders/resources/)

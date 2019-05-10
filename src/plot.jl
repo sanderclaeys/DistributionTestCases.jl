@@ -1,4 +1,4 @@
-function_ray_endpoints(anchor, nr::Int; radius_max=0.8, margin_deg=25, levels=1)
+function _ray_endpoints(anchor, nr::Int; radius_max=0.8, margin_deg=25, levels=1)
     ang_start = deg2rad(-90+margin_deg)
     ang_end   = deg2rad(0-margin_deg)
     if nr==1
@@ -13,7 +13,7 @@ function_ray_endpoints(anchor, nr::Int; radius_max=0.8, margin_deg=25, levels=1)
 end
 
 
-function_get_label(comp_dict, comp_type)
+function _get_label(comp_dict, comp_type)
     id = comp_dict["index"]
     if haskey(comp_dict, "name")
         name = comp_dict["name"]
@@ -112,10 +112,10 @@ function draw_topology(tppm, coords)
             label =_get_label(shunt, "shunt")
             item = Dict(
                 :kwargs_plot=>Dict(
-                    :color=>:scol, :linestyle=>:dash
+                    :color=>scol, :linestyle=>:dash
                 ),
                 :kwargs_scatter=>Dict(
-                    :color=>:scol, :hover=>:label
+                    :color=>scol, :hover=>:label
                 ),
             )
             append!(ray[:items], [item])

@@ -21,7 +21,7 @@ in the specified OpenDSS output files.
 function validate(tppm::Dict, res_buses::Dict, res_loads::Dict;
                     vm_atol=1.5E-4, va_atol_deg=0.05, pq_atol_kva=0.1)
     pm = PMs.build_generic_model(tppm, PMs.ACPPowerModel, TPPMs.post_tp_opf_lm, multiconductor=true)
-    sol = PMs.solve_generic_model(pm, Ipopt.IpoptSolver(print_level=0))
+    sol = PMs.solve_generic_model(pm, Ipopt.IpoptSolver(print_level=1))
     # check the load power
     @testset "load power" begin
         for (load_name, res_load) in res_loads
