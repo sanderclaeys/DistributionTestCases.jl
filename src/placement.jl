@@ -122,8 +122,8 @@ function get_bus_coords(tppm::Dict)
          if length(unset)==length(outn)
             coords[v_dest] = (v_x+1, v_y)
          else
-            height += 1
-            coords[v_dest] = (v_x+1, height)
+            height = maximum([p[2] for p in values(coords) if p[1]>v_x])
+            coords[v_dest] = (v_x+1, height+1)
          end
          if length(unset)>1
             #return here

@@ -1,189 +1,160 @@
-function get_bus_coords_old(tppm; spacing_x=1, spacing_y=2)
-    bus_source = [bus["index"] for (_,bus) in tppm["bus"] if bus["bus_type"]==3][1]
-    coords = Dict{Int, Any}()
-    coords[bus_source] = (0,0)
-
-    br_arcs_fr = [(br["index"], br["f_bus"], br["t_bus"]) for (_,br) in tppm["branch"]]
-    tr_arcs_fr = [(tr["index"], tr["f_bus"], tr["t_bus"]) for (_,tr) in tppm["trans"]]
-    arcs_fr = [[(x..., "trans") for x in tr_arcs_fr]..., [(x..., "branch") for x in br_arcs_fr]...]
-    arcs_new = ones(Bool, length(arcs_fr))
-    stack = [bus_source]
-    count = 0
-    steps = 0
-    bus_new = Dict{Int, Bool}()
-
-    while length(stack)>0 && steps <= 200
-        steps += 1
-        bus = pop!(stack)
-        bus_x = coords[bus][1]
-        bus_y = coords[bus][2]
-        if ismissing(bus_y)
-            bus_y = count
-        end
-        if !haskey(bus_new, bus)
-            bus_new[bus] = true
-        end
-        for (i,arc) in enumerate(arcs_fr)
-            if arcs_new[i]
-                if arc[2]==bus || arc[3]==bus
-                    dest = (arc[2]==bus) ? arc[3] : arc[2]
-                    arcs_new[i] = false
-                    dest_x = bus_x + spacing_x
-                    if !bus_new[bus]
-                        count += spacing_y
-                        dest_y = count
-                    else
-                        dest_y = count
-                        bus_new[bus] = false
-                    end
-                    coords[dest] = (dest_x, dest_y)
-                    stack = [stack..., bus, dest]
-                    break
-                end
-            end
-        end
+function_ray_endpoints(anchor, nr::Int; radius_max=0.8, margin_deg=25, levels=1)
+    ang_start = deg2rad(-90+margin_deg)
+    ang_end   = deg2rad(0-margin_deg)
+    if nr==1
+        vs = [(radius_max/levels)*exp(im*(ang_start+ang_end)/2)]
+    else
+        ang_step  = (ang_end-ang_start)/(nr-1)
+        radius = [(mod(i-1,levels)+1) for i in 1:nr].*(radius_max/levels)
+        ang = [ang_start+ang_step*i for i in 0:nr-1]
+        vs = radius.*exp.(im.*ang)
     end
-    return coords
+    endpoints = [(anchor[1]+real(v), anchor[2]+imag(v)) for v in vs]
 end
 
-function draw_topology(tppm, coords;
-    bus_color="black", branch_color="black", trans_color="blue", oltc_color="purple",
-    load_color="red", slack_color="green", straight=true)
-    fig = Plots.plot(xaxis=false, yaxis=false, legend=false, grid=false)
-    for (idstr,branch) in tppm["branch"]
-        f_bus = branch["f_bus"]
-        t_bus = branch["t_bus"]
-        nph = length(branch["active_phases"])
-        name = (haskey(branch, "name")) ? branch["name"] : ""
-        if haskey(coords, f_bus) && haskey(coords, t_bus)
-            f_x = coords[f_bus][1]
-            f_y = coords[f_bus][2]
-            t_x = coords[t_bus][1]
-            t_y = coords[t_bus][2]
-            Plots.plot!([f_x, f_x, t_x], [f_y, t_y, t_y], color=branch_color, width=nph)
-            if f_x==t_x
-                sx = f_x
-                sy = (f_y+t_y)/2
-            else
-                sx = (t_x+f_x)/2
-                sy = t_y
-            end
-            Plots.scatter!([sx], [sy], color=branch_color,
-                markershape=:square,
-                markerstrokewidth=1,
-                markercolor="white",
-                markerstrokecolor=branch_color,
-                markersize=3,
-                hover="branch $idstr"
-            )
-        end
+
+function_get_label(comp_dict, comp_type)
+    id = comp_dict["index"]
+    if haskey(comp_dict, "name")
+        name = comp_dict["name"]
+        return string("$comp_type $id ($name)")
+    else
+        return string("$comp_type $id")
     end
-    for (idstr,trans) in tppm["trans"]
-        f_bus = trans["f_bus"]
-        t_bus = trans["t_bus"]
-        is_oltc = !all(trans["fixed"])
-        lbl = is_oltc ? "oltc" : "trans"
-        name = (haskey(trans, "name")) ? trans["name"] : ""
-        if haskey(coords, f_bus) && haskey(coords, t_bus)
-            f_x = coords[f_bus][1]
-            f_y = coords[f_bus][2]
-            t_x = coords[t_bus][1]
-            t_y = coords[t_bus][2]
-            tcol = (is_oltc) ? oltc_color : trans_color
-            Plots.plot!([f_x, f_x, t_x], [f_y, t_y, t_y], color=tcol, width=3)
-            if f_x==t_x
-                sx1 = f_x
-                sx2 = f_x
-                sy = (f_y+t_y)/2
-                sy1 = sy+0.1
-                sy2 = sy-0.1
+end
+
+
+function _draw_plobs(plobs)
+    fig = Plots.plot(legend=false, xaxis=false, yaxis=false, grid=false)
+    if haskey(plobs, :line)
+        for line in plobs[:line]
+            (p1x,p1y) = line[:p1]
+            (p2x,p2y) = line[:p2]
+            if p1x!=p2x && p1y!=p2y
+                # insert a midpoint
+                pmx = p1x
+                pmy = p2y
+                Plots.plot!([p1x, pmx, p2x], [p1y, pmy, p2y]; line[:kwargs_plot]...)
+                if haskey(line, :kwargs_scatter)
+                    Plots.scatter!([p1x/2+p2x/2], [p2y]; line[:kwargs_scatter]...)
+                end
             else
-                sy1 = t_y
-                sy2 = t_y
-                sx = (f_x+t_x)/2
-                sx1 = sx+0.1
-                sx2 = sx-0.1
-            end
-            Plots.scatter!([sx1], [sy1], color="white",
-                markerstrokewidth=1,
-                markersize=7,
-                markerstrokecolor=tcol
-            )
-            Plots.scatter!([sx2], [sy2], color="white",
-                markerstrokewidth=1,
-                markersize=7,
-                markerstrokecolor=tcol,
-                hover="$lbl $idstr"
-            )
-        end
-    end
-    for (idstr,bus) in tppm["bus"]
-        id = bus["index"]
-        loads = [load for (_,load) in tppm["load"] if load["load_bus"]==id]
-        loads_labels = ["load $idstr" for (idstr,load) in tppm["load"] if load["load_bus"]==id]
-        gens = [gen for (_,gen) in tppm["gen"] if gen["gen_bus"]==id]
-        gens_labels = ["gen $idstr" for (idstr,gen) in tppm["gen"] if gen["gen_bus"]==id]
-        name = (haskey(bus, "name")) ? bus["name"] : ""
-        if haskey(coords, id)
-            x = coords[id][1]
-            y = coords[id][2]
-            bcol = (bus["bus_type"]==3) ? slack_color : bus_color
-            load_colors =  Array{String, 1}(undef, length(loads))
-            for (i,load) in enumerate(loads)
-                # fix once labels have settled
-                if load["conn"]=="wye" && load["model"] in ["const_pq", "constant_power", "proportional_vm", "const_imp"]
-                    load_colors[i] = "brown"
-                else
-                    load_colors[i] = "red"
+                Plots.plot!([p1x, p2x], [p1y, p2y]; line[:kwargs_plot]...)
+                if haskey(line, :kwargs_scatter)
+                    Plots.scatter!([p1x/2+p2x/2], [p1y/2+p2y/2]; line[:kwargs_scatter]...)
                 end
             end
-            draw_topology_loads(length(loads), coords[id], loads_labels, load_color=load_colors)
-            draw_topology_gens(length(gens), coords[id], gens_labels)
-            Plots.scatter!([x], [y], color=bcol, hover="bus $idstr")
+        end
+    end
+    if haskey(plobs, :ray)
+        for ray in plobs[:ray]
+            (p1x,p1y) = ray[:anchor]
+            items = ray[:items]
+            nr = length(items)
+            ps =_ray_endpoints(ray[:anchor], nr)
+            for i in 1:nr
+                item = items[i]
+                (p2x,p2y) = ps[i]
+                Plots.plot!([p1x, p2x], [p1y, p2y]; item[:kwargs_plot]...)
+                Plots.scatter!([p2x], [p2y]; item[:kwargs_scatter]...)
+            end
+        end
+    end
+    if haskey(plobs, :connector)
+        for conn in plobs[:connector]
+            (px,py) = conn[:p]
+            Plots.scatter!([px], [py]; conn[:kwargs_scatter]...)
         end
     end
     return fig
 end
 
 
-function draw_topology_loads(nr_loads, bus_coords, labels; margin_deg=30, radius=0.8, load_color::Array{String, 1}=["red" for i in 1:nr_loads])
-    if nr_loads==1
-        spacing = [0.5]
-    else
-        spacing = [i/(nr_loads-1) for i in 0:nr_loads-1]
+function draw_topology(tppm, coords)
+    plobs = Dict(:connector=>[], :line=>[], :ray=>[])
+    for (_,bus) in tppm["bus"]
+        bus_id = bus["index"]
+        # add the bus itself
+        p = coords[bus_id]
+        label =_get_label(bus, "bus")
+        conn = Dict(:p=>p, :kwargs_scatter=>Dict(
+            :markercolor=> bus["bus_type"]==3 ? :green : :black,
+            :markersize=>2,
+            :hover=>label,
+        ))
+        append!(plobs[:connector], [conn])
+        # add a ray for its components
+        ray = Dict(:anchor=>p, :items=>[])
+        bus_shunts = [shunt for (_,shunt) in tppm["shunt"] if shunt["shunt_bus"]==bus_id]
+        bus_loads = [load for (_,load) in tppm["load"] if load["load_bus"]==bus_id]
+        bus_gens = [gen for (_,gen) in tppm["gen"] if gen["gen_bus"]==bus_id]
+        # loads
+        for load in bus_loads
+            conn = haskey(load, "conn") ? load["conn"] : "wye"
+            colmap = Dict("proportional_vm"=>:red, "proportional_vmsqr"=>:orange, "constant_power"=>:green)
+            model = haskey(load, "model") ? load["model"] : "constant_power"
+            lcol = haskey(colmap, model) ? colmap[model] : :black
+            label =_get_label(load, "load")
+            item = Dict(
+                :kwargs_plot=>Dict(:linestyle=>:dash, :color=>lcol),
+                :kwargs_scatter=>Dict(
+                    :color=>lcol,
+                    :markersize=>2,
+                    :markershape=> conn=="delta" ? :utriangle : :rect,
+                    :hover=>label,
+                )
+            )
+            append!(ray[:items], [item])
+        end
+        # shunts
+        for shunt in bus_shunts
+            scol = :orange
+            label =_get_label(shunt, "shunt")
+            item = Dict(
+                :kwargs_plot=>Dict(
+                    :color=>:scol, :linestyle=>:dash
+                ),
+                :kwargs_scatter=>Dict(
+                    :color=>:scol, :hover=>:label
+                ),
+            )
+            append!(ray[:items], [item])
+        end
+        # gens
+        for gen in bus_gens
+            gcol = :green
+            label =_get_label(gen, "gen")
+            item = Dict(:kwargs_plot=>Dict(:color=>gcol),
+                :kwargs_scatter=>Dict(:color=>gcol, :markershape=>:pentagon, :hover=>label)
+            )
+            append!(ray[:items], [item])
+        end
+        append!(plobs[:ray], [ray])
     end
-    a_start = deg2rad(-margin_deg)
-    a_end = deg2rad(-90+margin_deg)
-    as = a_start.+(a_end-a_start).*spacing
-    f_x = bus_coords[1]
-    f_y = bus_coords[2]
-    t_x = f_x .+ radius.*real.(exp.(im.*as))
-    t_y = f_y .+ radius.*imag.(exp.(im.*as))
-    for i in 1:nr_loads
-        Plots.plot!([f_x, t_x[i]], [f_y, t_y[i]], color=load_color[i], width=1)
-        Plots.scatter!([t_x[i]], [t_y[i]],
-            color=load_color[i], markershape=:diamond, markerstrokewidth=0.5, markersize=3.5, hover=labels[i]
+    for (idstr,branch) in tppm["branch"]
+        p1 = coords[branch["f_bus"]]
+        p2 = coords[branch["t_bus"]]
+        label =_get_label(branch, "branch")
+        line = Dict(
+            :p1=>p1, :p2=>p2,
+            :kwargs_plot=>Dict(:color=>:black),
+            :kwargs_scatter=>Dict(:color=>:white,
+                :markershape=>:square, :markersize=>2, :hover=>label
+            ),
         )
+        append!(plobs[:line], [line])
     end
-end
-
-function draw_topology_gens(nr_gens, bus_coords, labels; margin_deg=30, radius=0.8, gen_color::Array{String, 1}=["green" for i in 1:nr_gens])
-    if nr_gens==1
-        spacing = [0.5]
-    else
-        spacing = [i/(nr_gens-1) for i in 0:nr_gens-1]
-    end
-    a_start = deg2rad(-margin_deg)
-    a_end = deg2rad(-90+margin_deg)
-    as = a_start.+(a_end-a_start).*spacing
-    f_x = bus_coords[1]
-    f_y = bus_coords[2]
-    t_x = f_x .+ radius.*real.(exp.(im.*as))
-    t_y = f_y .+ radius.*imag.(exp.(im.*as))
-    for i in 1:nr_gens
-        Plots.plot!([f_x, t_x[i]], [f_y, t_y[i]], color=gen_color[i], width=1)
-        Plots.scatter!([t_x[i]], [t_y[i]],
-            color=gen_color[i], markershape=:diamond, markerstrokewidth=0.5, markersize=3.5, hover=labels[i]
+    for (idstr,trans) in tppm["trans"]
+        (p1x,p1y) = coords[trans["f_bus"]]
+        (p2x,p2y) = coords[trans["t_bus"]]
+        label =_get_label(trans, "trans")
+        tcol = :blue
+        line = Dict(
+            :p1=>(p1x,p1y), :p2=>(p2x,p2y),
+            :kwargs_plot=>Dict(:color=>tcol),
+            :kwargs_scatter=>Dict(:color=>tcol, :markershape=>:circle, :hover=>label)
         )
+        append!(plobs[:line], [line])
     end
+    return _draw_plobs(plobs)
 end
