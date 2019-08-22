@@ -1,3 +1,17 @@
+abstract type AbstractColorMap end
+
+
+struct LightnessColorMap <: AbstractColorMap
+    kpi_max
+    color_max
+    threshold
+end
+LightnessColorMap(kpi_max, color_max; threshold=0) = LightnessColorMap(kpi_max, color_max, threshold)
+function get_color(cm::LightnessColorMap, kpi::Real)
+    return "red"
+end
+
+
 function _ray_endpoints(anchor, nr::Int; radius_max=0.8, margin_deg=25, levels=1)
     ang_start = deg2rad(-90+margin_deg)
     ang_end   = deg2rad(0-margin_deg)
@@ -148,7 +162,94 @@ function draw_topology(tppm, coords)
         (p1x,p1y) = coords[trans["f_bus"]]
         (p2x,p2y) = coords[trans["t_bus"]]
         label =_get_label(trans, "trans")
-        tcol = :blue
+        tcol = all(trans["fixed"]) ? :blue : :purple
+        line = Dict(
+            :p1=>(p1x,p1y), :p2=>(p2x,p2y),
+            :kwargs_plot=>Dict(:color=>tcol),
+            :kwargs_scatter=>Dict(:color=>tcol, :markershape=>:circle, :hover=>label)
+        )
+        append!(plobs[:line], [line])
+    end
+    return _draw_plobs(plobs)
+end
+
+function visualize_bus_kpi(tppm, coords, bus_kpi, cm::AbstractColorMap)
+    plobs = Dict(:connector=>[], :line=>[], :ray=>[])
+    for (_,bus) in tppm["bus"]
+        bus_id = bus["index"]
+        # add the bus itself
+        p = coords[bus_id]
+        bcol = get_color(cm, bus_kpi["$bus_id"])
+        label =_get_label(bus, "bus")
+        conn = Dict(:p=>p, :kwargs_scatter=>Dict(
+            :markercolor=> bcol,
+            :markersize=>4,
+            :hover=>label,
+        ))
+        append!(plobs[:connector], [conn])
+        # add a ray for its components
+        ray = Dict(:anchor=>p, :items=>[])
+        bus_shunts = [shunt for (_,shunt) in tppm["shunt"] if shunt["shunt_bus"]==bus_id]
+        bus_loads = [load for (_,load) in tppm["load"] if load["load_bus"]==bus_id]
+        bus_gens = [gen for (_,gen) in tppm["gen"] if gen["gen_bus"]==bus_id]
+        # loads
+        for load in bus_loads
+            lcol = :black
+            label =_get_label(load, "load")
+            item = Dict(
+                :kwargs_plot=>Dict(:linestyle=>:dash, :color=>lcol),
+                :kwargs_scatter=>Dict(
+                    :color=>lcol,
+                    :markersize=>2,
+                    :markershape=> conn=="delta" ? :utriangle : :rect,
+                    :hover=>label,
+                )
+            )
+            append!(ray[:items], [item])
+        end
+        # shunts
+        for shunt in bus_shunts
+            scol = :black
+            label =_get_label(shunt, "shunt")
+            item = Dict(
+                :kwargs_plot=>Dict(
+                    :color=>scol, :linestyle=>:dash
+                ),
+                :kwargs_scatter=>Dict(
+                    :color=>scol, :hover=>:label
+                ),
+            )
+            append!(ray[:items], [item])
+        end
+        # gens
+        for gen in bus_gens
+            gcol = :black
+            label =_get_label(gen, "gen")
+            item = Dict(:kwargs_plot=>Dict(:color=>gcol),
+                :kwargs_scatter=>Dict(:color=>gcol, :markershape=>:pentagon, :hover=>label)
+            )
+            append!(ray[:items], [item])
+        end
+        append!(plobs[:ray], [ray])
+    end
+    for (idstr,branch) in tppm["branch"]
+        p1 = coords[branch["f_bus"]]
+        p2 = coords[branch["t_bus"]]
+        label =_get_label(branch, "branch")
+        line = Dict(
+            :p1=>p1, :p2=>p2,
+            :kwargs_plot=>Dict(:color=>:black),
+            :kwargs_scatter=>Dict(:color=>:white,
+                :markershape=>:square, :markersize=>2, :hover=>label
+            ),
+        )
+        append!(plobs[:line], [line])
+    end
+    for (idstr,trans) in tppm["trans"]
+        (p1x,p1y) = coords[trans["f_bus"]]
+        (p2x,p2y) = coords[trans["t_bus"]]
+        label =_get_label(trans, "trans")
+        tcol = :black
         line = Dict(
             :p1=>(p1x,p1y), :p2=>(p2x,p2y),
             :kwargs_plot=>Dict(:color=>tcol),
