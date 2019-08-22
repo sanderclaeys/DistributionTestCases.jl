@@ -12,24 +12,10 @@ a modified dss file of the original OpenDSS IEEE13 implementation, and apply
 a few transformations in post-processing. This is needed because the OpenDSS
 parser does not support all of the features available in TPPM.
 ```
-import TPPMTestFeeders
-tppm = TPPMTestFeeders.get_IEEE13()
+import PMDTestFeeders
+data_pmd = PMDTestFeeders.get_ieee13()
 # Don't forget to add voltage bounds and line bounds!
 # These are not included in the original specification
-```
-Sometimes, you want to get rid of all exotic load models (all besides constant power, wye connected).
-You can generate such a simplified model by doing the following. This will run
-an ACP, and then convert all loads to PQ loads, at the setpoint obtained from
-the ACP run.
-```
-tppm = TTF.get_IEEE13()
-tppm_pq = TTF.convert_to_PQ(tppm)
-```
-Also, this package includes a fairly robust json parser for TPPM data models
-(currently broken in TPPM under new extensions). This can be used like this
-```
-TPPMTestFeeders.save_tppm(tppm, "file.json")
-tppm = TPPMTestFeeders.load_tppm("file.json")
 ```
 Finally, some experimental topology plotting. This should only be used for radial
 feeders. The Plotly backend is preferred, as it shows the id of elements when
@@ -38,9 +24,9 @@ you hover over them.
 # example for IEEE13
 import Plots
 Plots.plotly()
-tppm = TPPMTestFeeders.get_IEEE13()
-coords = TPPMTestFeeders.get_bus_coords(tppm, spacing_y=1)
-TPPMTestFeeders.draw_topology(tppm, coords)
+data_pmd = PMDTestFeeders.get_ieee13()
+coords = PMDTestFeeders.get_bus_coords(data_pmd)
+PMDTestFeeders.draw_topology(data_pmd, coords)
 ```
 <p align="center"><img src="docs/IEEE13_topology.png"></p>
 
@@ -79,3 +65,5 @@ such as IEEE123 (≈1700 test by extrapolation).
 
 ### IEEE123
 "The IEEE 123 node test feeder operates at a nominal voltage of 4.16 kV. While this is not a popular voltage level it does provide voltage drop problems that must be solved with the application of voltage regulators and shunt capacitors. This circuit is characterized by overhead and underground lines, unbalanced loading with constant current, impedance, and power, four voltage regulators, shunt capacitor banks, and multiple switches.This circuit is “well-behaved” with minimal convergence problems." [[source]](http://sites.ieee.org/pes-testfeeders/resources/)
+
+<p align="center"><img src="docs/IEEE123_topology.png"></p>
