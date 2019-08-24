@@ -31,14 +31,7 @@ PMDTestFeeders.draw_topology(data_pmd, coords)
 <p align="center"><img src="docs/IEEE13_topology.png"></p>
 
 ## Validation
-Test feeders are validated by comparing
-- all bus voltage phasors
-- power drawm by all loads
-
-This process is automated; dss output files are automatically parsed and
-compared against the results of TPPM. For IEEE13 for example, this results in
-a total of 184 tests. Like this, validation will scale to large test feeders,
-such as IEEE123 (≈1700 test by extrapolation).
+Test feeders are validated by comparing all bus voltage magnitudes.
 
 ## Included test feeders
 
