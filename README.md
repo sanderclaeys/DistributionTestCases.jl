@@ -7,8 +7,7 @@ You can install this package itself by executing the following in Julia REPL. Th
 ]add https://github.com/sanderclaeys/PMDTestFeeders.jl
 ```
 ## Usage
-You can obtain a TPPM data model by executing the following. This will parse
-a modified dss file of the original OpenDSS IEEE13 implementation, and apply
+You can obtain a PMD data model by executing the following. This will parse the original OpenDSS IEEE13 implementation, and apply
 a few transformations in post-processing. This is needed because the OpenDSS
 parser does not support all of the features available in TPPM.
 ```
@@ -16,6 +15,18 @@ import PMDTestFeeders
 data_pmd = PMDTestFeeders.get_ieee13()
 # Don't forget to add voltage bounds and line bounds!
 # These are not included in the original specification
+```
+Similarly, you can obtain IEEE32, IEEE123, and LVTestCase.
+```
+data_pmd_ieee32 = PMDTestFeeders.get_ieee32()
+data_pmd_ieee123 = PMDTestFeeders.get_ieee123()
+# LVTestCase has profiles, so you have to specify the time.
+data_pmd_lvtestcase = PMDTestFeeders.get_lvtestcase(t=1000)
+```
+You can obtain a simplified version of the feeders. This will only contain the base components (branches, shunt and wye-connected constant power loads), which are supported by all formulations. Delta-connected loads are converted to wye-connected loads, by calculating which power they would draw at the bus to which they are connected under balanced conditions.
+```
+data_pmd = PMDTestFeeders.get_ieee13()
+PMDTestFeeders.simplify_feeder!(data_pmd)
 ```
 Finally, some experimental topology plotting. This should only be used for radial
 feeders. The Plotly backend is preferred, as it shows the id of elements when
