@@ -16,9 +16,9 @@ data_pmd = PMDTestFeeders.get_ieee13()
 # Don't forget to add voltage bounds and line bounds!
 # These are not included in the original specification
 ```
-Similarly, you can obtain IEEE32, IEEE123, and LVTestCase.
+Similarly, you can obtain IEEE34, IEEE123, and LVTestCase.
 ```
-data_pmd_ieee32 = PMDTestFeeders.get_ieee32()
+data_pmd_ieee34 = PMDTestFeeders.get_ieee34()
 data_pmd_ieee123 = PMDTestFeeders.get_ieee123()
 # LVTestCase has profiles, so you have to specify the time.
 data_pmd_lvtestcase = PMDTestFeeders.get_lvtestcase(t=1000)
