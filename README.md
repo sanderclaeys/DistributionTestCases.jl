@@ -42,7 +42,7 @@ PMDTestFeeders.draw_topology(data_pmd, coords)
 <p align="center"><img src="docs/IEEE13_topology.png"></p>
 
 ## Validation
-Test feeders are validated by comparing all bus voltage magnitudes.
+Test feeders are validated by comparing all bus voltage magnitudes. When a bus is galvanically isolated from the ground, the phase-to-phase voltages are compared instead of the phase-to-ground voltages. (Needed for bus 610 in IEEE123)
 
 ## Included test feeders
 
@@ -51,7 +51,7 @@ Test feeders are validated by comparing all bus voltage magnitudes.
 |IEEE   |IEEE13 |validated (2E-6) |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder13.zip)|[@GitHub](https://github.com/tshort/OpenDSS/blob/master/Test/IEEE13_Assets.dss) |
 |IEEE   |IEEE34 |validated (8.5E-7)    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder34.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/34Bus)   |
 |IEEE   |IEEE37 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder37.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/37Bus)   |
-|IEEE   |IEEE123 |validated (1E-4)   |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder123.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/123Bus)   |
+|IEEE   |IEEE123 |validated (6E-7)   |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder123.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/123Bus)   |
 |IEEE   |LVTestCase |validated (1E-7)   | |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/LVTestCase) |
 
 ### IEEE13
