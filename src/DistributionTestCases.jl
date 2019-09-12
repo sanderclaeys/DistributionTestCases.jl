@@ -1,4 +1,4 @@
-module PMDTestFeeders
+module DistributionTestCases
 
 import PowerModelsDistribution
 const PMD = PowerModelsDistribution
@@ -6,7 +6,7 @@ const PMD = PowerModelsDistribution
 import PowerModels
 const PMs = PowerModels
 
-const BASE_DIR = Base.functionloc(PMDTestFeeders.eval)[1][1:end-22]
+const BASE_DIR = Base.functionloc(DistributionTestCases.eval)[1][1:end-29]
 
 import LightGraphs
 const LG = LightGraphs
@@ -19,15 +19,12 @@ import OpenDSSDirect
 const ODD = OpenDSSDirect
 using Compat.Test
 
-include("util.jl")
-include("validate.jl")
-include("parser.jl")
+
+include("simplify.jl")
 include("plot.jl")
 include("placement.jl")
 include("dssdirect.jl")
-include("feeders/ieee13.jl")
-include("feeders/ieee34.jl")
-include("feeders/ieee123.jl")
-include("feeders/lvtestcase.jl")
+include("validate.jl")
+include("feeders.jl")
 
 end
