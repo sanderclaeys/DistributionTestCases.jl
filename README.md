@@ -1,32 +1,34 @@
-# PMDTestFeeders
-Generates and validates TPPM data models for common test feeders. Some of these require some adjustment after the call to the OpenDSS parser, and are therefore contained here for now.
+# DistributionTestCases
+This package contains distribution test cases for use with [PowerModelsDistribution.jl](https://github.com/lanl-ansi/PowerModelsDistribution.jl) (PMD). Additionally, it contains utilities for
+- comparing power flow results of PMD and OpenDSS, obtained with the help of OpenDSSDirect.jl,
+- plotting PMD data files representing radial networks.
 
 ## Installation
 You can install this package itself by executing the following in Julia REPL. This will prompt for your GitHub credentials, because this is a private repository for now.
 ```
-]add https://github.com/sanderclaeys/PMDTestFeeders.jl
+]add https://github.com/sanderclaeys/DistributionTestCases.jl
 ```
 ## Usage
-You can obtain a PMD data model by executing the following. This will parse the original OpenDSS IEEE13 implementation, and apply
-a few transformations in post-processing. This is needed because the OpenDSS
-parser does not support all of the features available in TPPM.
+The package contains the data files for each test case. A path to the master dss file for each test case, is contained in the constant `CASE_PATH`. This path can be passed to the PMD OpenDSS parser to obtain a PMD data model. For example,
 ```
-import PMDTestFeeders
-data_pmd = PMDTestFeeders.get_ieee13()
-# Don't forget to add voltage bounds and line bounds!
-# These are not included in the original specification
+import DistributionTestCases
+DTC = DistributionTestCases
+import PowerModelsDistribution
+PMD = PowerModelsDistribution
+
+path = DTC.CASE_PATH["IEEE13"]
+data_pmd = PMD.parse_file(path)
 ```
-Similarly, you can obtain IEEE34, IEEE123, and LVTestCase.
+Similarly, you can obtain IEEE34, IEEE123, and LVTestCase. Note that LVTestCase is a dynamic profile and therefore you further need to specify the time step; PMD does not support parsing load profiles.
 ```
-data_pmd_ieee34 = PMDTestFeeders.get_ieee34()
-data_pmd_ieee123 = PMDTestFeeders.get_ieee123()
-# LVTestCase has profiles, so you have to specify the time.
-data_pmd_lvtestcase = PMDTestFeeders.get_lvtestcase(t=1000)
+data_pmd_IEEE34 = PMD.parse_file(DTC.CASE_PATH["IEEE34"])
+data_pmd_IEEE123 = PMD.parse_file(DTC.CASE_PATH["IEEE123"])
+data_pmd_LVTestCase_t1000 = PMD.parse_file(DTC.CASE_PATH["LVTestCase"][1000])
 ```
 You can obtain a simplified version of the feeders. This will only contain the base components (branches, shunt and wye-connected constant power loads), which are supported by all formulations. Delta-connected loads are converted to wye-connected loads, by calculating which power they would draw at the bus to which they are connected under balanced conditions.
 ```
-data_pmd = PMDTestFeeders.get_ieee13()
-PMDTestFeeders.simplify_feeder!(data_pmd)
+data_pmd = PMD.parse_file(DTC.CASE_PATH["IEEE13"])
+DTC.simplify_feeder!(data_pmd)
 ```
 Finally, some experimental topology plotting. This should only be used for radial
 feeders. The Plotly backend is preferred, as it shows the id of elements when
@@ -35,9 +37,9 @@ you hover over them.
 # example for IEEE13
 import Plots
 Plots.plotly()
-data_pmd = PMDTestFeeders.get_ieee13()
-coords = PMDTestFeeders.get_bus_coords(data_pmd)
-PMDTestFeeders.draw_topology(data_pmd, coords)
+data_pmd = PMD.parse_file(DTC.CASE_PATH["IEEE13"])
+coords = PMD.get_bus_coords(data_pmd)
+PMD.draw_topology(data_pmd, coords)
 ```
 <p align="center"><img src="docs/IEEE13_topology.png"></p>
 
@@ -45,14 +47,15 @@ PMDTestFeeders.draw_topology(data_pmd, coords)
 Test feeders are validated by comparing all bus voltage magnitudes. When a bus is galvanically isolated from the ground, the phase-to-phase voltages are compared instead of the phase-to-ground voltages. (Needed for bus 610 in IEEE123)
 
 ## Included test feeders
+The numerical results mentioned in this table, were obtained with Ipopt setting `tol=1E-10` and an OpenDSS convergence tolerance of `1E-6`. See the `test/runtests.jl` for the details.
 
 |publisher|name|status|files|OpenDSS|
 |---    |---    |---        |---|---|
-|IEEE   |IEEE13 |validated (2E-6) |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder13.zip)|[@GitHub](https://github.com/tshort/OpenDSS/blob/master/Test/IEEE13_Assets.dss) |
-|IEEE   |IEEE34 |validated (8.5E-7)    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder34.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/34Bus)   |
+|IEEE   |IEEE13 |validated (5.1E-8) |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder13.zip)|[@GitHub](https://github.com/tshort/OpenDSS/blob/master/Test/IEEE13_Assets.dss) |
+|IEEE   |IEEE34 |validated (1.4E-7)    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder34.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/34Bus)   |
 |IEEE   |IEEE37 |planned    |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder37.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/37Bus)   |
-|IEEE   |IEEE123 |validated (6E-7)   |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder123.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/123Bus)   |
-|IEEE   |LVTestCase |validated (1E-7)   | |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/LVTestCase) |
+|IEEE   |IEEE123 |validated (1.3E-8)   |[zip](http://sites.ieee.org/pes-testfeeders/files/2017/08/feeder123.zip)  |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/123Bus)   |
+|IEEE   |LVTestCase |validated (3.4E-8 at t=1000)   | |[@GitHub](https://github.com/tshort/OpenDSS/tree/master/Distrib/IEEETestCases/LVTestCase) |
 
 ### IEEE13
 "This circuit model is very small and used to test common features of distribution analysis software, operating at 4.16 kV. It is characterized by being short, relatively highly loaded, a single voltage regulator at the substation, overhead and underground lines, shunt capacitors, an in-line transformer, and unbalanced loading." [[source]](http://sites.ieee.org/pes-testfeeders/resources/)
