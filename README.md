@@ -4,7 +4,7 @@ This package contains distribution test cases for use with [PowerModelsDistribut
 - plotting PMD data files representing radial networks.
 
 ## Installation
-You can install this package itself by executing the following in Julia REPL. This will prompt for your GitHub credentials, because this is a private repository for now.
+You can install this package itself by executing the following in Julia REPL.
 ```
 ]add https://github.com/sanderclaeys/DistributionTestCases.jl
 ```
