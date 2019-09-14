@@ -1,7 +1,7 @@
 name = "DistributionTestCases"
 uuid = "ee9588fa-d3ac-11e9-2cb3-b3040bb0eda3"
 authors = ["Sander Claeys <id@sanderclaeys.eu>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
