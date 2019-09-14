@@ -18,14 +18,14 @@ function remove_transformers!(data_pmd)
     vbase_new = source["base_kv"]
 
     # remove transformers
-    for (trans_id, trans) in data_pmd["trans"]
+    for (trans_id, trans) in data_pmd["transformer"]
         f_bus = trans["f_bus"]
         t_bus = trans["t_bus"]
         # do not remove the source bus
         bus_rm_id = (f_bus!=source_id) ? f_bus : t_bus
         bus_sub_id = (f_bus!=source_id) ? t_bus : f_bus
         delete!(data_pmd["bus"], string(bus_rm_id))
-        delete!(data_pmd["trans"], trans_id)
+        delete!(data_pmd["transformer"], trans_id)
         substitute_bus_reference!(data_pmd, bus_rm_id, bus_sub_id)
     end
 
@@ -44,7 +44,7 @@ function substitute_bus_reference!(data_pmd, bus_from_id, bus_to_id)
         end
     end
 
-    for (_, branch) in [data_pmd["branch"]..., data_pmd["trans"]...]
+    for (_, branch) in [data_pmd["branch"]..., data_pmd["transformer"]...]
         if branch["f_bus"]==bus_from_id
             branch["f_bus"] = bus_to_id
         end
