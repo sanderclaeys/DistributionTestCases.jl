@@ -158,7 +158,7 @@ function draw_topology(tppm, coords)
         )
         append!(plobs[:line], [line])
     end
-    for (idstr,trans) in tppm["trans"]
+    for (idstr,trans) in tppm["transformer"]
         (p1x,p1y) = coords[trans["f_bus"]]
         (p2x,p2y) = coords[trans["t_bus"]]
         label =_get_label(trans, "trans")

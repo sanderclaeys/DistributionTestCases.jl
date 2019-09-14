@@ -1,63 +1,51 @@
-"""
-This function validates the data model by obtaining an ACP PF solution,
-and comparing the bus voltage phasors and load power against the data contained
-in the specified OpenDSS output files.
-"""
-function validate(tppm::Dict, dss_output_vmva_path, dss_output_pdqd_path;
-                            vm_atol=1.5E-4, va_atol_deg=0.05, pq_atol_kva=0.1)
-    res_buses = parse_opendss_VLN_Node(dss_output_vmva_path, va_offset=-deg2rad(30))
-    res_loads = parse_opendss_Power_elem_kVA(dss_output_pdqd_path)
+function compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd;
+        vm_rtol = 1E-6,
+        verbose = true,
+        buses_compare_ll=[]
+    )
+    name2id = Dict([(b["name"], k) for (k,b) in data_pmd["bus"] if haskey(b, "name") && b["name"]!=""])
 
-    validate(tppm, res_buses, res_loads,
-            vm_atol=vm_atol, va_atol_deg=va_atol_deg, pq_atol_kva=pq_atol_kva)
-end
-
-
-"""
-This function validates the data model by obtaining an ACP PF solution,
-and comparing the bus voltage phasors and load power against the data contained
-in the specified OpenDSS output files.
-"""
-function validate(tppm::Dict, res_buses::Dict, res_loads::Dict;
-                    vm_atol=1.5E-4, va_atol_deg=0.05, pq_atol_kva=0.1)
-    pm = PMs.build_generic_model(tppm, PMs.ACPPowerModel, TPPMs.post_tp_opf_lm, multiconductor=true)
-    sol = PMs.solve_generic_model(pm, Ipopt.IpoptSolver(print_level=1))
-    # check the load power
-    @testset "load power" begin
-        for (load_name, res_load) in res_loads
-            load_id = name2id(tppm["load"], load_name)
-            sbase_kva = tppm["baseMVA"]*1E3
-            for c in 1:3
-                pd_kw_dss = (ismissing(res_load[:pd_kw][c])) ? 0 : res_load[:pd_kw][c]
-                pd_kw_tppm = JuMP.getvalue(PMs.var(pm, pm.cnw, c, :pd, load_id))*sbase_kva
-                pd_kw_diff = pd_kw_dss-pd_kw_tppm
-                @test abs(pd_kw_diff) <= pq_atol_kva
-
-                qd_kvar_dss = (ismissing(res_load[:qd_kvar][c])) ? 0 : res_load[:qd_kvar][c]
-                qd_kvar_tppm = JuMP.getvalue(PMs.var(pm, pm.cnw, c, :qd, load_id))*sbase_kva
-                qd_kvar_diff = qd_kvar_dss-qd_kvar_tppm
-                @test abs(qd_kvar_diff) <= pq_atol_kva
+    δ_max = 0
+    for (name, sol_dss_bus) in sol_dss["bus"]
+        id = name2id[name]
+        vbase = data_pmd["bus"][id]["base_kv"]*1E3/sqrt(3)
+        cs = sort(collect(keys(sol_dss_bus["vm"])))
+        vm_pmd = sol_pmd["solution"]["bus"][id]["vm"]
+        va_pmd = sol_pmd["solution"]["bus"][id]["va"]
+        vm_dss = sol_dss_bus["vm"]
+        va_dss = sol_dss_bus["va"]
+        if name in buses_compare_ll
+            @assert(length(cs)>1, "Bus $name only has one conductor, so it can not be compared in a line-to-line fashion.")
+            for (i,c) in enumerate(cs)
+                c_fr = c
+                c_to = cs[mod(i+1,length(cs))+1]
+                v_pmd_fr = vm_pmd[c_fr]*exp(im*va_pmd[c_fr])
+                v_pmd_to = vm_pmd[c_to]*exp(im*va_pmd[c_to])
+                v_dss_fr = vm_dss[c_fr]*exp(im*va_dss[c_fr])/vbase
+                v_dss_to = vm_dss[c_to]*exp(im*va_dss[c_to])/vbase
+                vm_pmd_frto = abs(v_pmd_fr-v_pmd_to)/sqrt(3)
+                vm_dss_frto = abs(v_dss_fr-v_dss_to)/sqrt(3)
+                δ = abs(vm_dss_frto-vm_pmd_frto)/abs(vm_dss_frto)
+                δ_max = max(δ_max, δ)
+                if δ >= vm_rtol && verbose
+                    println("Deviation at bus $name.$c_fr->$c_to of $δ:")
+                    println("\tdss: $vm_dss_frto")
+                    println("\tpmd: $vm_pmd_frto")
+                end
             end
-        end
-    end
-    # check the voltage phasors
-    @testset "bus voltage" begin
-        for (bus_name, res_bus) in res_buses
-            bus_id = name2id(tppm["bus"], bus_name)
-            vbase_kv = tppm["bus"]["$bus_id"]["base_kv"]
-            for c in 1:3
-                if !ismissing(res_bus[:vm_kv][c])
-                    vm_dss = res_bus[:vm_kv][c]/(vbase_kv/sqrt(3))
-                    vm_tppm = sol["solution"]["bus"]["$bus_id"]["vm"][c]
-                    vm_diff = vm_dss-vm_tppm
-                    @test abs(vm_diff)<=vm_atol
-
-                    va_dss = res_bus[:va_rad][c]
-                    va_tppm = sol["solution"]["bus"]["$bus_id"]["va"][c]
-                    va_diff_deg = rad2deg(va_dss-va_tppm)
-                    @test abs(va_diff_deg)<=va_atol_deg
+        else
+            for c in cs
+                vm_pmd_c = vm_pmd[c]
+                vm_dss_c = vm_dss[c]/vbase
+                δ = abs(vm_pmd_c-vm_dss_c)/abs(vm_dss_c)
+                δ_max = max(δ_max, δ)
+                if δ > vm_rtol && verbose
+                    println("Deviation at bus $name.$c of $δ:")
+                    println("\tdss: $vm_dss_c")
+                    println("\tpmd: $vm_pmd_c")
                 end
             end
         end
     end
+    return δ_max
 end

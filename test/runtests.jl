@@ -2,8 +2,8 @@ import PowerModels
 PMs = PowerModels
 import PowerModelsDistribution
 PMD = PowerModelsDistribution
-import PMDTestFeeders
-TF = PMDTestFeeders
+import DistributionTestCases
+DTC = DistributionTestCases
 
 using Compat.Test
 import Memento
@@ -11,61 +11,70 @@ import Memento
 import JuMP
 import Ipopt
 ipopt_solver = JuMP.with_optimizer(Ipopt.Optimizer, print_level=0, tol=1E-10)
-
+dss_tolerance = 1E-6
 # Suppress warnings during testing.
 Memento.setlevel!(Memento.getlogger(PowerModels), "error")
 
-@testset "PMDTestFeeders" begin
+@testset "DistributionTestCases" begin
     @testset "validate test cases" begin
         @testset "ieee13" begin
-            path = "$(TF.BASE_DIR)/src/data/ieee13/ieee13_pmd.dss"
-            sol_dss = TF.get_soldss_opendssdirect(path)
-            data_pmd = TF.get_ieee13()
-            sol_pmd = PMD.run_ac_tp_pf_lm(data_pmd, ipopt_solver)["solution"]
-            mismatch = TF.validate_dssdirect_sols(sol_pmd, sol_dss, data_pmd,verbose=false)
-            @test mismatch <= 2E-6
+            path = DTC.CASE_PATH["IEEE13"]
+            data_pmd = PMD.parse_file(path)
+
+            sol_dss = DTC.get_soldss_opendssdirect(path, tolerance=dss_tolerance)
+            sol_pmd = PMD.run_ac_mc_pf_lm(data_pmd, ipopt_solver)
+
+            δ_max = DTC.compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd)
+            @test δ_max <= 2E-7
         end
         @testset "ieee34" begin
-            path = "$(TF.BASE_DIR)/src/data/ieee34/ieee34_pmd.dss"
-            sol_dss = TF.get_soldss_opendssdirect(path)
-            data_pmd = TF.get_ieee34()
-            sol_pmd = PMD.run_ac_tp_pf_lm(data_pmd, ipopt_solver)["solution"]
-            mismatch = TF.validate_dssdirect_sols(sol_pmd, sol_dss, data_pmd,verbose=false)
-            @test mismatch <= 8.5E-7
+            path = DTC.CASE_PATH["IEEE34"]
+            data_pmd = PMD.parse_file(path)
+
+            sol_dss = DTC.get_soldss_opendssdirect(path, tolerance=dss_tolerance)
+            sol_pmd = PMD.run_ac_mc_pf_lm(data_pmd, ipopt_solver)
+
+            δ_max = DTC.compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd)
+            @test δ_max <= 2E-7
         end
         @testset "ieee123" begin
-            path = "$(TF.BASE_DIR)/src/data/ieee123/ieee123_pmd.dss"
-            sol_dss = TF.get_soldss_opendssdirect(path)
-            data_pmd = TF.get_ieee123()
-            sol_pmd = PMD.run_ac_tp_pf_lm(data_pmd, ipopt_solver)["solution"]
-            mismatch = TF.validate_dssdirect_sols(sol_pmd, sol_dss, data_pmd,verbose=false)
-            @test mismatch <= 1E-4
+            path = DTC.CASE_PATH["IEEE123"]
+            data_pmd = PMD.parse_file(path)
+
+            sol_dss = DTC.get_soldss_opendssdirect(path, tolerance=dss_tolerance)
+            sol_pmd = PMD.run_ac_mc_pf_lm(data_pmd, ipopt_solver)
+
+            δ_max = DTC.compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd,
+                buses_compare_ll=["610"])
+            @test δ_max <= 2E-7
         end
         @testset "lvtestcase t=1000" begin
-            path = "$(TF.BASE_DIR)/src/data/lvtestcase/snapshots/lvtestcase_pmd_t1000.dss"
-            sol_dss = TF.get_soldss_opendssdirect(path)
-            data_pmd = TF.get_lvtestcase(t=1000)
-            sol_pmd = PMD.run_ac_tp_pf_lm(data_pmd, ipopt_solver)["solution"]
-            mismatch = TF.validate_dssdirect_sols(sol_pmd, sol_dss, data_pmd,verbose=false)
-            @test mismatch <= 1E-7
+            path = DTC.CASE_PATH["LVTestCase"][1000]
+            data_pmd = PMD.parse_file(path)
+
+            sol_dss = DTC.get_soldss_opendssdirect(path, tolerance=dss_tolerance)
+            sol_pmd = PMD.run_ac_mc_pf_lm(data_pmd, ipopt_solver)
+
+            δ_max = DTC.compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd)
+            @test δ_max <= 2E-7
         end
     end
 
     @testset "validate simplification" begin
         # validate simplification on IEEE13
         # set transformer tap to 1
-        data_pmd = PMDTestFeeders.get_ieee13()
-        for (_, trans) in data_pmd["trans"]
+        data_pmd = PMD.parse_file(DTC.CASE_PATH["IEEE13"])
+        for (_, trans) in data_pmd["transformer"]
             trans["tm"] = PMs.MultiConductorVector(ones(3))
         end
 
         # first validate voltage drop
         #!############################
         data_pmd_v1 = deepcopy(data_pmd)
-        PMDTF.simplify_feeder!(data_pmd_v1, loads_to_wye_pq=false)
+        DTC.simplify_feeder!(data_pmd_v1, loads_to_wye_pq=false)
 
-        sol = PMD.run_ac_tp_pf_lm(data_pmd, ipopt_solver)
-        sol_v1 = PMD.run_ac_tp_pf_lm(data_pmd_v1, ipopt_solver)
+        sol = PMD.run_ac_mc_pf_lm(data_pmd, ipopt_solver)
+        sol_v1 = PMD.run_ac_mc_pf_lm(data_pmd_v1, ipopt_solver)
         vm_diff_max = maximum(vcat([abs.(sol["solution"]["bus"][id]["vm"].values-sol_v1["solution"]["bus"][id]["vm"].values) for (id, bus) in sol_v1["solution"]["bus"]]...))
         @test vm_diff_max<=1E-4
 
@@ -83,11 +92,11 @@ Memento.setlevel!(Memento.getlogger(PowerModels), "error")
 
         # create fully simplified feeder
         data_pmd_v2 = deepcopy(data_pmd)
-        simplify_feeder!(data_pmd_v2)
+        DTC.simplify_feeder!(data_pmd_v2)
 
-        pm = PMs.build_model(data_pmd, PMs.ACPPowerModel, PMD.post_tp_pf_lm, ref_extensions=[PMD.ref_add_arcs_trans!], multiconductor=true)
+        pm = PMs.build_model(data_pmd, PMs.ACPPowerModel, PMD.post_mc_pf_lm, ref_extensions=[PMD.ref_add_arcs_trans!], multiconductor=true)
         sol = PMs.optimize_model!(pm, ipopt_solver)
-        pm_v2 = PMs.build_model(data_pmd_v2, PMs.ACPPowerModel, PMD.post_tp_pf_lm, ref_extensions=[PMD.ref_add_arcs_trans!], multiconductor=true)
+        pm_v2 = PMs.build_model(data_pmd_v2, PMs.ACPPowerModel, PMD.post_mc_pf_lm, ref_extensions=[PMD.ref_add_arcs_trans!], multiconductor=true)
         sol_v2 = PMs.optimize_model!(pm_v2, ipopt_solver)
 
         # check that loads draw same power under balanced conditions

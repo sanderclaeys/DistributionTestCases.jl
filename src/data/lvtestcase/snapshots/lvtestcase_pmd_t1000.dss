@@ -3,8 +3,7 @@ clear
 Set DefaultBaseFrequency=50  ! for European system
 
 New circuit.LVTest
-!~ BasekV=11 pu=1.05  ISC3=3000  ISC1=5
-~ BasekV=11 pu=1.05  ISC3=99999999  ISC1=99999999
+~ BasekV=11 pu=1.05  ISC3=3000  ISC1=5
 
 !LineCode.txt
 !#######################
@@ -22,8 +21,7 @@ New LineCode.4c_95_SAC_XC nphases=3 R1=0.322 X1=0.074 R0=0.804 X0=0.093 C1=0 C0=
 
 !Transformers.txt
 !#######################
-!New Transformer.TR1 Buses=[SourceBus 1] Conns=[Delta Wye] kVs=[11 0.416] kVAs=[800 800] XHL=4 sub=y
-New Transformer.TR1 Buses=[SourceBus 1] Conns=[Delta Wye] kVs=[11 0.416] kVAs=[800 800] XHL=4 sub=y %rs=[0.0000001 0.0000001]
+New Transformer.TR1 Buses=[SourceBus 1] Conns=[Delta Wye] kVs=[11 0.416] kVAs=[800 800] XHL=4 sub=y
 !#######################
 
 !Loads.txt

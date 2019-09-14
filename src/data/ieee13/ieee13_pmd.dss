@@ -11,8 +11,7 @@ Set DefaultBaseFrequency=60
 new circuit.IEEE13Nodeckt
 ~ basekv=115 pu=1.0001 phases=3 bus1=SourceBus
 ~ Angle=30                                                         ! advance angle 30 deg so result agree with published angle
-!~ MVAsc3=20000 MVASC1=21000    ! stiffen the source to approximate inf source
-~ MVAsc3=1e12 MVASC1=1E12    ! stiffen the source to approximate inf source
+~ MVAsc3=20000 MVASC1=21000    ! stiffen the source to approximate inf source
 
 
 
@@ -65,11 +64,6 @@ New linecode.mtx602 nphases=3 BaseFreq=60
 New linecode.mtx603 nphases=2 BaseFreq=60
 ~ rmatrix = (1.3238 | 0.2066 1.3294 )
 ~ xmatrix = (1.3569 | 0.4591 1.3471 )
-~ units=mi
-
-New linecode.mtx603b nphases=2 BaseFreq=60
-~ rmatrix = (1.3238 | 0.2066 1.3238 )
-~ xmatrix = (1.3569 | 0.4591 1.3569 )
 ~ units=mi
 
 New linecode.mtx604 nphases=2 BaseFreq=60
@@ -128,8 +122,8 @@ New Line.632670    Phases=3 Bus1=632.1.2.3    Bus2=670.1.2.3  LineCode=mtx601 Le
 New Line.670671    Phases=3 Bus1=670.1.2.3    Bus2=671.1.2.3  LineCode=mtx601 Length=1333 units=ft
 New Line.671680    Phases=3 Bus1=671.1.2.3    Bus2=680.1.2.3  LineCode=mtx601 Length=1000 units=ft
 New Line.632633    Phases=3 Bus1=632.1.2.3    Bus2=633.1.2.3  LineCode=mtx602 Length=500  units=ft
-New Line.632645    Phases=2 Bus1=632.3.2      Bus2=645.3.2    LineCode=mtx603b Length=500  units=ft
-New Line.645646    Phases=2 Bus1=645.3.2      Bus2=646.3.2    LineCode=mtx603b Length=300  units=ft
+New Line.632645    Phases=2 Bus1=632.3.2      Bus2=645.3.2    LineCode=mtx603 Length=500  units=ft
+New Line.645646    Phases=2 Bus1=645.3.2      Bus2=646.3.2    LineCode=mtx603 Length=300  units=ft
 New Line.692675    Phases=3 Bus1=692.1.2.3    Bus2=675.1.2.3  LineCode=mtx606 Length=500  units=ft
 New Line.671684    Phases=2 Bus1=671.1.3      Bus2=684.1.3    LineCode=mtx604 Length=300  units=ft
 New Line.684611    Phases=1 Bus1=684.3        Bus2=611.3      LineCode=mtx605 Length=300  units=ft
@@ -154,6 +148,6 @@ Transformer.Reg2.Taps=[1.0 1.0500]
 Transformer.Reg3.Taps=[1.0 1.06875]
 
 Set Controlmode=OFF
-Set tolerance=0.00001
+Set tolerance=0.001
 
 Solve

@@ -63,7 +63,7 @@ function get_bus_coords(tppm::Dict)
    id2v = Dict([(bus["index"],v) for (v,bus) in enumerate(values(tppm["bus"]))])
    v2id = Dict([(v,id) for (id,v) in id2v])
    gr = LG.SimpleGraph(length(keys(id2v)))
-   for (_,tr) in tppm["trans"]
+   for (_,tr) in tppm["transformer"]
       f_v = id2v[tr["f_bus"]]
       t_v = id2v[tr["t_bus"]]
       LG.add_edge!(gr, f_v, t_v)
