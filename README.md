@@ -1,4 +1,6 @@
 # DistributionTestCases.jl
+NOTE: this package depends on versions of PowerModels.jl (v0.6) and PowerModelsDistribution.jl (v0.13) which still have to be released!
+
 This package contains distribution test cases for use with [PowerModelsDistribution.jl](https://github.com/lanl-ansi/PowerModelsDistribution.jl) (PMD). Additionally, it contains utilities for
 - comparing power flow results of PMD and OpenDSS, obtained with the help of OpenDSSDirect.jl,
 - plotting PMD data files representing radial networks.
