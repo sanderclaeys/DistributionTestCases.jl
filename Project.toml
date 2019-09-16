@@ -1,7 +1,7 @@
 name = "DistributionTestCases"
 uuid = "ee9588fa-d3ac-11e9-2cb3-b3040bb0eda3"
 authors = ["Sander Claeys <id@sanderclaeys.eu>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
@@ -11,6 +11,8 @@ JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
+Mosek = "6405355b-0ac2-5fba-af84-adbd65488c0e"
+MosekTools = "1ec41992-ff65-5c91-ac43-2df89e9693a4"
 OpenDSSDirect = "a8b11937-1041-50f2-9818-136bb7a8fb06"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
