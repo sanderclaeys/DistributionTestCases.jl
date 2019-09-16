@@ -1,13 +1,14 @@
 
 function simplify_feeder!(data_pmd;
     remove_transformers=true,
-    loads_to_wye_pq=true
+    loads_to_wye_pq=true,
+    load_scale=1.0
 )
     if remove_transformers
         remove_transformers!(data_pmd)
     end
     if loads_to_wye_pq
-        simplify_load_models!(data_pmd)
+        simplify_load_models!(data_pmd, load_scale=load_scale)
     end
 end
 
@@ -67,8 +68,11 @@ function substitute_bus_reference!(data_pmd, bus_from_id, bus_to_id)
 end
 
 
-function simplify_load_models!(data_pmd)
+function simplify_load_models!(data_pmd; load_scale=1.0)
     for (_, load) in data_pmd["load"]
+        # scale load
+        load["pd"] *= load_scale
+        load["qd"] *= load_scale
         # convert to constant power load
         load["model"] = "constant_power"
         # convert delta to wye load under balanced assumption
@@ -81,7 +85,5 @@ function simplify_load_models!(data_pmd)
             load["pd"] = PMs.MultiConductorVector(real.(s_wye))
             load["qd"] = PMs.MultiConductorVector(imag.(s_wye))
         end
-        load["pd"] *= 1
-        load["qd"] *= 1
     end
 end

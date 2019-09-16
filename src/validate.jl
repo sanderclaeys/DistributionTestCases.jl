@@ -49,3 +49,29 @@ function compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd;
     end
     return δ_max
 end
+
+
+function get_vm_minmax(sol_dss, sol_pmd, data_pmd;
+        buses_skip=[]
+    )
+    name2id = Dict([(b["name"], k) for (k,b) in data_pmd["bus"] if haskey(b, "name") && b["name"]!=""])
+
+    vmin = Inf
+    vmax = 0
+
+    for (name, sol_dss_bus) in sol_dss["bus"]
+        id = name2id[name]
+
+        vbase = data_pmd["bus"][id]["base_kv"]*1E3/sqrt(3)
+        cs = sort(collect(keys(sol_dss_bus["vm"])))
+        vm_pmd = sol_pmd["solution"]["bus"][id]["vm"]
+        vm_dss = sol_dss_bus["vm"]
+        if !(name in buses_skip)
+            for c in cs
+                vmin = min(vmin, vm_pmd[c])
+                vmax = max(vmax, vm_pmd[c])
+            end
+        end
+    end
+    return vmin, vmax
+end
