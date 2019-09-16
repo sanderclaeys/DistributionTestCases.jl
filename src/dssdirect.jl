@@ -9,6 +9,7 @@ import JuMP
 
 
 function get_soldss_opendssdirect(dss_path::AbstractString; tolerance=missing)
+    dir = pwd()
     ODD.Basic.ClearAll()
     ODD.dss("compile $dss_path")
 
@@ -30,5 +31,7 @@ function get_soldss_opendssdirect(dss_path::AbstractString; tolerance=missing)
             sol_dss["bus"][bname]["va"][c] = angle(v[i])
         end
     end
+    # restore original directory
+    cd(dir)
     return sol_dss
 end
