@@ -19,5 +19,5 @@ PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 PowerModelsDistribution = "d7431456-977f-11e9-2de3-97ff7677985e"
 
 [compat]
-PowerModels = "0.13"
-PowerModelsDistribution = "0.6"
+PowerModels = ">=0.14"
+PowerModelsDistribution = ">=0.7"

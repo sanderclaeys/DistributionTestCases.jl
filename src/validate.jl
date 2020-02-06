@@ -1,7 +1,7 @@
 function compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd;
         vm_rtol = 1E-6,
         verbose = true,
-        buses_compare_ll=[]
+        buses_compare_ll=[],
     )
     name2id = Dict([(b["name"], k) for (k,b) in data_pmd["bus"] if haskey(b, "name") && b["name"]!=""])
 
@@ -10,8 +10,16 @@ function compare_dss_to_pmd(sol_dss, sol_pmd, data_pmd;
         id = name2id[name]
         vbase = data_pmd["bus"][id]["base_kv"]*1E3/sqrt(3)
         cs = sort(collect(keys(sol_dss_bus["vm"])))
-        vm_pmd = sol_pmd["solution"]["bus"][id]["vm"]
-        va_pmd = sol_pmd["solution"]["bus"][id]["va"]
+        bus = sol_pmd["solution"]["bus"][id]
+        if haskey(bus, "vm") && haskey(bus, "va")
+            vm_pmd = bus["vm"]
+            va_pmd = bus["va"]
+        elseif haskey(bus, "vr") && haskey(bus, "vi")
+            vm_pmd = sqrt.(bus["vr"].^2+bus["vi"].^2)
+            va_pmd = atan.(bus["vi"], bus["vr"])
+        else
+            error("The solution you passed is missing voltage coordinates at bus $id.")
+        end
         vm_dss = sol_dss_bus["vm"]
         va_dss = sol_dss_bus["va"]
         if name in buses_compare_ll
